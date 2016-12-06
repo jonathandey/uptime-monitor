@@ -7,21 +7,20 @@ class Notification {
 		this.notifier = notifier;
 	}
 
-	send(msg)
+	send()
 	{
 		var channels = this.notifier.via();
 
-		// Send via email
-		if(channels.indexOf('mail') >= 0)
+		channels.forEach(function(channel)
 		{
-			this.notifier.toMail(msg).send();
-		}
+			var channelName = channel.charAt(0).toUpperCase() + channel.slice(1);
+			var fn = 'to' + channelName;
 
-		// Send to console
-		if(channels.indexOf('console') >= 0)
-		{
-			this.notifier.toConsole(msg).send();
-		}
+			if(typeof this.notifier[fn] === 'function')
+			{
+				this.notifier[fn]().send();
+			}
+		}.bind(this));
 	}
 }
 

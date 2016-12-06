@@ -8,16 +8,18 @@ class SiteDownNotification {
 	constructor(site)
 	{
 		this.site = site;
+
+		this.message = site.url + ' is down!';
 	}
 
-	toMail(msg)
+	toMail()
 	{
-		return new Mail().setBody(msg);
+		return new Mail().setBody(this.message);
 	}
 
-	toConsole(msg)
+	toConsole()
 	{
-		return new Console().setBody(msg);
+		return new Console().setBody(this.message);
 	}
 
 	via()

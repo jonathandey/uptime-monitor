@@ -53,7 +53,7 @@ function pingSite(site)
 		if(response.statusCode !== 200)
 		{
 			// Send alert
-			new Notification(new SiteDownNotification(site)).send(url + ' is down!');
+			new Notification(new SiteDownNotification(site)).send();
 
 			winston.log('error', 'down', logDetail);
 			return;
