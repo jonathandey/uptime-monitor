@@ -14,7 +14,7 @@ var site = {
 	{
 		return fs.readdirSync(sitesPath).filter(function(file)
 		{
-			return fs.statSync(path.join(sitesPath, file)).isFile();
+			return fs.statSync(path.join(sitesPath, file)).isFile() && file.indexOf('.') > 0;
 		});
 	},
 	find: function(url)
