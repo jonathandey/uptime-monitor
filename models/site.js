@@ -6,6 +6,11 @@ var sitesFolder = process.env.SITES_FOLDER || 'storage/sites';
 var sitesPath = __dirname + '/../' + sitesFolder;
 
 var site = {
+	_defaults: {
+		interval: 300000,
+		pause: false
+	},
+
 	create: function(url, data)
 	{
 		fs.writeFileSync(path.join(sitesPath, this.encodeUrl(url)), data);
