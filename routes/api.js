@@ -4,7 +4,8 @@ var yaml = require('js-yaml');
 
 var Site = require('../models/site');
 
-/* GET home page. */
+// Todo: Add optional basic auth (middleware?)
+
 router.get('/sites', function(req, res, next) {
 	var sites = [];
 
@@ -20,6 +21,8 @@ router.post('/site', function(req, res, next) {
 	var url = req.body.url.trim();
 	var interval = parseInt(req.body.interval) || 300000;
 
+	// Todo: Ensure it is a valid URL
+
 	if(url && !Site.exists(url))
 	{
 		var data = yaml.safeDump({ url: url, interval: interval });
@@ -30,5 +33,9 @@ router.post('/site', function(req, res, next) {
 
 	return res.json({ status: 'error', 'msg': 'site exists' });
 });
+
+// Todo: Update a webiste
+
+// Todo: Show recent logs for site
 
 module.exports = router;

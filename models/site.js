@@ -7,7 +7,7 @@ var sitesPath = __dirname + '/../' + sitesFolder;
 
 var site = {
 	_defaults: {
-		interval: 300000,
+		interval: 300000, // 5 minutes
 		pause: false
 	},
 
@@ -17,8 +17,11 @@ var site = {
 	},
 	all: function()
 	{
+		// Todo: loop through folders and extract files
+
 		return fs.readdirSync(sitesPath).filter(function(file)
 		{
+			// Filter out anything but files. Ignore files begining with a .
 			return fs.statSync(path.join(sitesPath, file)).isFile() && file.indexOf('.') > 0;
 		});
 	},
