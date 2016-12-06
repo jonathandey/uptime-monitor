@@ -3,7 +3,7 @@ var path = require('path');
 var yaml = require('js-yaml');
 
 var sitesFolder = process.env.SITES_FOLDER || 'storage/sites';
-var sitesPath = __dirname + '/../' + sitesFolder;
+var sitesPath = path.join(__dirname, '/../', sitesFolder);
 
 var site = {
 	_defaults: {
@@ -22,7 +22,7 @@ var site = {
 		return fs.readdirSync(sitesPath).filter(function(file)
 		{
 			// Filter out anything but files. Ignore files begining with a .
-			return fs.statSync(path.join(sitesPath, file)).isFile() && file.indexOf('.') > 0;
+			return fs.statSync(path.join(sitesPath, file)).isFile() && file.indexOf('.') !== 0;
 		});
 	},
 	find: function(url)
