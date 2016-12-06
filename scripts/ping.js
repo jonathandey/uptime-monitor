@@ -4,6 +4,9 @@ var path = require('path');
 
 var Site = require('../models/site');
 
+var Notification = require('../notifications/Notification');
+var SiteDownNotification = require('../notifications/SiteDownNotification');
+
 var loadedSites = [];
 var sitePings = [];
 
@@ -50,7 +53,8 @@ function pingSite(site)
 		if(response.statusCode !== 200)
 		{
 			// Send alert
-			console.warn('WEBSITE DOWN!', url);
+			new Notification(new SiteDownNotification(site)).send(url + ' is down!');
+
 			winston.log('error', 'down', logDetail);
 			return;
 		}
@@ -62,7 +66,7 @@ function pingSite(site)
 
 function loadSites()
 {
-	// console.log('Loading in sites...');
+	
 	Site.all().forEach(function(url)
 	{
 		var site = Site.find(url);
