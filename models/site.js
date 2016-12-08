@@ -45,11 +45,13 @@ class Site {
 
 	create(attributes)
 	{
-		this.attributes = Object.assign(this._defaultAttributes, {
+		attributes = Object.assign(this._defaultAttributes, {
 			id: this.makeKey()
-		}, this.attributes);
+		}, attributes);
 
-		this.save();
+		var site = new Site(attributes);
+
+		return site.save();
 	}
 
 	update(attributes)
@@ -58,7 +60,7 @@ class Site {
 
 		console.log('updating', this)
 
-		this.save();
+		return this.save();
 	}
 
 	save()
