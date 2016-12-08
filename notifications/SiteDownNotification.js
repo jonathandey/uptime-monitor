@@ -9,7 +9,7 @@ class SiteDownNotification {
 	{
 		this.site = site;
 
-		this.message = site.url + ' is down!';
+		this.message = site.getAttribute('url') + ' is down!';
 	}
 
 	toMail()

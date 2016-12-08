@@ -21,29 +21,39 @@ var siteLoader = setInterval(function() {
 
 function pingSite(site)
 {
-	var url = site.url;
-	var interval = site.interval;
-	var paused = site.pause;
-
-	if(paused === true)
-	{
-		return;
-	}
+	var siteID = site.getKey();
+	var url = site.getAttribute('url');
+	var interval = site.getAttribute('interval');
 
 	request({ url: url, time: true, headers: { 
-		'User-Agent': 'UpTime Monitor', 
-		'X-UPTIME-INTERVAL': interval 
-	} }, function(error, response, body)
+			'User-Agent': 'UpTime Monitor', 
+			'X-UPTIME-INTERVAL': interval
+		},
+		timeout: 1500
+	}, function(error, response, body)
 	{
-		if(error)
+		if(error && error.code == 'ETIMEDOUT' && error.connect === true)
 		{
-			winston.log('error', 'error', error);
+			winston.log('error', 'connection timeout', {
+				id: siteID,
+				url: url
+			});
+
+			sendSiteDownNotification(site);
+
 			return;
 		}
 
-		// Log the request
+		if(error)
+		{
+			console.log(error);
+
+			return;
+		}
+
+		// No error has occured with the request. Log it!
 		var logDetail = { 
-			id: Site.encodeUrl(url),
+			id: siteID,
 			url: url,
 			status: response.statusCode, 
 			responseTime: response.elapsedTime,
@@ -52,31 +62,46 @@ function pingSite(site)
 
 		if(response.statusCode !== 200)
 		{
-			// Send alert
-			new Notification(new SiteDownNotification(site)).send();
+			winston.log('error', 'not ok', logDetail);
 
-			winston.log('error', 'down', logDetail);
+			// Send alert
+			sendSiteDownNotification(site);
+			
 			return;
 		}
 
 		winston.log('info', 'ping', logDetail);
+		
 		return;
 	});
 }
 
+function sendSiteDownNotification(site)
+{
+	new Notification(new SiteDownNotification(site)).send();	
+}
+
 function loadSites()
 {
-	
-	Site.all().forEach(function(url)
-	{
-		var site = Site.find(url);
+	var sites = new Site().all();
 
-		if(!loadedSites[url])
+	// console.log(loadedSites);
+
+	sites.forEach(function(site)
+	{
+		var id = site.getKey();
+
+		if(!loadedSites[id])
 		{
-			loadedSites[url] = site;
+			loadedSites[id] = site;
+
+			if(site.getAttribute('pause') === true)
+			{
+				return;
+			}
 
 			pingSite(site);
-			startSiteInterval(url, site);
+			startSiteInterval(site);
 		}
 	});
 }
@@ -90,74 +115,76 @@ function updateLoadedSites()
 {
 	// console.log("Updating loaded sites...");
 
-	for(url in loadedSites)
+	for(siteID in loadedSites)
 	{
-		var site = Site.find(url);
-		var currentLoadedSite = loadedSites[url]; // currently loaded site config
+		var site = new Site().find(siteID);
+		var currentLoadedSite = loadedSites[siteID]; // currently loaded site config
 
 		// Purge the site if it no longer exists
 		if(!site)
 		{
-			return purgeSite(url);
+			return purgeSite(currentLoadedSite);
 		}
 
 		// diff changes
 		if(JSON.stringify(currentLoadedSite) != JSON.stringify(site))
 		{
-			console.log('Found changes for ' + url);
-			loadedSites[url] = site;
+			console.log('Found changes for ' + site.getAttribute('url'));
+			loadedSites[siteID] = site;
 		}
 
-		if(site.pause === true &&
-			sitePings[url])
+		if(site.getAttribute('pause') === true &&
+			sitePings[siteID])
 		{
-			clearSiteInterval(url);
+			clearSiteInterval(site);
 		}
 		
-		if(site.pause === false &&
-			! sitePings[url])
+		if(site.getAttribute('pause') === false &&
+			! sitePings[siteID])
 		{
-			startSiteInterval(url, site);
+			startSiteInterval(site);
 		}
 
 		// Update site interval
-		if(site.pause === false &&
-			sitePings[url] &&
-			(currentLoadedSite.interval && 
-				currentLoadedSite.interval != site.interval
+		if(site.getAttribute('pause') === false &&
+			sitePings[siteID] &&
+			(currentLoadedSite.getAttribute('interval') && 
+				currentLoadedSite.getAttribute('interval') != site.getAttribute('interval')
 			)
 		)
 		{
-			console.log('Updating ping interval for ', url)
-			clearSiteInterval(url);
-			startSiteInterval(url, site);
+			console.log('Updating ping interval for ', site.getAttribute('url'))
+			clearSiteInterval(site);
+			startSiteInterval(site);
 		}
 	};
 }
 
-function purgeSite(url)
+function purgeSite(site)
 {
-	console.log('purging url ' + url);
-	clearSiteInterval(url);
-	delete loadedSites[url];
+	console.log('purging url ' + site.getAttribute('url'));
+	clearSiteInterval(site);
+	delete loadedSites[site.getKey()];
 
 	return;	
 }
 
-function startSiteInterval(url, site)
+function startSiteInterval(site)
 {
-	console.log('starting ping for ' + url);
-	return sitePings[url] = setInterval(function()
+	var id = site.getKey();
+
+	console.log('starting ping for ' + site.getAttribute('url'));
+	return sitePings[id] = setInterval(function()
 	{
 		pingSite(site);
-	}, site.interval);
+	}, site.getAttribute('interval'));
 }
 
-function clearSiteInterval(url)
+function clearSiteInterval(site)
 {
-	console.log('stopping ping for ' + url);
-	clearInterval(sitePings[url]);
-	delete sitePings[url];
+	console.log('stopping ping for ' + site.getAttribute('url'));
+	clearInterval(sitePings[site.getKey()]);
+	delete sitePings[site.getKey()];
 
 	return;
 }

@@ -1,3 +1,7 @@
-url: 'https://www.yoursite.co.uk'
 interval: 60000
 pause: false
+notifications:
+  - mail
+  - console
+id: abc123
+url: 'https://www.yoursite.tld/'
