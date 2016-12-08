@@ -24,7 +24,7 @@ class SiteDownNotification {
 
 	via()
 	{
-		return ['mail', 'console'];
+		return (this.site.notifications) ? this.site.notifications : ['console'];
 	}
 
 }
